@@ -41,6 +41,7 @@ public class ProductResource {
             productRepository.persist(product);
             return Response.status(Status.CREATED).entity(product).build();
         } catch (ConstraintViolationException e) {
+            e.printStackTrace();
             return Response.status(Status.BAD_REQUEST).entity(e.getConstraintViolations()).build();
         }
     }

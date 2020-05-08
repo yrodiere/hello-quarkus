@@ -5,7 +5,7 @@ import javax.validation.Valid;
 
 @ApplicationScoped
 public class ProductService {
-    public void validateProduct(@Valid Product product){
-        
+    public void validateProduct(@Valid Product product) {
+
     }
 }
