@@ -33,16 +33,21 @@ public class ProductResource {
     @APIResponse(responseCode = "200", description = "Product registration successful")
     @APIResponse(responseCode = "400", description = "Invalid Product")
     @APIResponse(responseCode = "500", description = "Server unavailable")
-    @APIResponse(description = "Product", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Product.class)))
-    public Response add(Product product) {
+    @APIResponse(description = "Product", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductPOST.class)))
+    public Response add(ProductPOST newProduct) {
         try {
-            product.addUUID();
+            Product product = new Product(newProduct);
             productService.validateProduct(product);
             productRepository.persist(product);
             return Response.status(Status.CREATED).entity(product).build();
         } catch (ConstraintViolationException e) {
-            e.printStackTrace();
             return Response.status(Status.BAD_REQUEST).entity(e.getConstraintViolations()).build();
-        }
+        } // catch (IllegalArgumentException e) {
+          // if (e.getMessage().contains("No enum constant")) {
+          // return Response.status(Status.BAD_REQUEST).entity("Category not
+          // valid").build();
+          // }
+          // throw e;
+          // }
     }
 }
