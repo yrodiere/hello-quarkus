@@ -29,3 +29,9 @@ If you want to learn more about building native executables, please consult http
 ```
 curl http://localhost:8080/openapi
 ```
+
+## Running tests
+
+To run unit tests only `./mvnw test`
+
+To run all tests unit and integration `./mvnw clean verify`

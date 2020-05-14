@@ -66,7 +66,7 @@ public class Product extends PanacheEntityBase {
         // for jpa
     }
 
-    public Product(ProductPOST product) {
+    public Product(NewProduct product) {
         this.addUUID();
         this.createdAt = LocalDateTime.now();
         this.name = product.name;

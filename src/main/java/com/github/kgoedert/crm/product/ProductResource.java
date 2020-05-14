@@ -33,8 +33,8 @@ public class ProductResource {
     @APIResponse(responseCode = "200", description = "Product registration successful")
     @APIResponse(responseCode = "400", description = "Invalid Product")
     @APIResponse(responseCode = "500", description = "Server unavailable")
-    @APIResponse(description = "Product", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProductPOST.class)))
-    public Response add(ProductPOST newProduct) {
+    @APIResponse(description = "Product", content = @Content(mediaType = "application/json", schema = @Schema(implementation = NewProduct.class)))
+    public Response add(NewProduct newProduct) {
         try {
             Product product = new Product(newProduct);
             productService.validateProduct(product);

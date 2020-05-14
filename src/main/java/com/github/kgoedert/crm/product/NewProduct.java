@@ -2,8 +2,8 @@ package com.github.kgoedert.crm.product;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-@Schema(name = "ProductPOST", description = "Represents a product in the inventory")
-public class ProductPOST {
+@Schema(name = "NewProduct", description = "Represents a product in the inventory")
+public class NewProduct {
     @Schema(required = true, example = "Rice")
     public String name;
 
