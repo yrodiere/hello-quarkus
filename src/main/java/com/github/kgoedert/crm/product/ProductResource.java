@@ -1,5 +1,7 @@
 package com.github.kgoedert.crm.product;
 
+import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
@@ -41,13 +43,11 @@ public class ProductResource {
             productRepository.persist(product);
             return Response.status(Status.CREATED).entity(product).build();
         } catch (ConstraintViolationException e) {
-            return Response.status(Status.BAD_REQUEST).entity(e.getConstraintViolations()).build();
-        } // catch (IllegalArgumentException e) {
-          // if (e.getMessage().contains("No enum constant")) {
-          // return Response.status(Status.BAD_REQUEST).entity("Category not
-          // valid").build();
-          // }
-          // throw e;
-          // }
+            String message = e.getConstraintViolations().stream()
+            .map(cv -> cv.getMessage())
+            .collect(Collectors.joining(", "));
+
+            return Response.status(Status.BAD_REQUEST).entity(message).build();
+        }
     }
 }

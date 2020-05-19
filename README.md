@@ -24,6 +24,10 @@ You can then execute your native executable with: `./target/hello-quarkus-1.0-SN
 
 If you want to learn more about building native executables, please consult https://quarkus.io/guides/building-native-image.
 
+## Infrastructure
+
+The database used in this project is available at https://github.com/kgoedert/infrastructure
+
 ## Accessing openAPI
 
 ```
@@ -34,4 +38,4 @@ curl http://localhost:8080/openapi
 
 To run unit tests only `./mvnw test`
 
-To run all tests unit and integration `./mvnw clean verify`
+To run all tests unit and integration and generate the coverage report `./mvnw clean verify`

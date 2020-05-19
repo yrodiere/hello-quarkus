@@ -33,8 +33,6 @@ create table products(
     uuid varchar(36) not null
 );
 create sequence product_id_seq increment 1 start 1;
-create unique index idx_name on products(name);
-
 
 create table orders_products(
     product_id integer not null references products(id),
