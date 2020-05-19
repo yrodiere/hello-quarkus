@@ -1,5 +1,6 @@
 package com.github.kgoedert.crm.product;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -17,6 +18,8 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+
+import io.vertx.core.json.JsonObject;
 
 @Path("/product")
 @Produces(MediaType.APPLICATION_JSON)
@@ -43,11 +46,13 @@ public class ProductResource {
             productRepository.persist(product);
             return Response.status(Status.CREATED).entity(product).build();
         } catch (ConstraintViolationException e) {
-            String message = e.getConstraintViolations().stream()
-            .map(cv -> cv.getMessage())
-            .collect(Collectors.joining(", "));
+            List<String> messages = e.getConstraintViolations().stream()
+                    .map(cv -> cv.getMessage())
+                    .collect(Collectors.toList());
+            JsonObject resp = new JsonObject();
+            resp.put("errors", messages);
 
-            return Response.status(Status.BAD_REQUEST).entity(message).build();
+            return Response.status(Status.BAD_REQUEST).entity(messages).build();
         }
     }
 }

@@ -17,6 +17,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 import com.github.kgoedert.crm.UUID;
 
@@ -43,6 +44,7 @@ public class Product extends PanacheEntityBase {
 
     @Column(name = "category")
     @Enumerated(EnumType.STRING)
+    @NotNull(message = "Category is required")
     private Category category;
 
     @Column(name = "description")
