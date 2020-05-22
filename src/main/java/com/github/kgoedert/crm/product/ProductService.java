@@ -6,6 +6,7 @@ import javax.validation.Valid;
 @ApplicationScoped
 public class ProductService {
     public void validateProduct(@Valid Product product) {
-
+        product.addUUID();
+        product.addCreationDate();
     }
 }

@@ -1,3 +1,18 @@
+## What is this?
+
+A simple crud application with customers, products and orders.
+
+## Features in use
+
+The quarkus modules/features used are:
+
+- REST services
+- Liquibase integration
+- Open API
+- Unit and Integrated testing with code coverage
+- Hibernate/Panache with postgres database
+- Bean Validation
+
 ## Running the application in dev mode
 
 You can run your application in dev mode that enables live coding using:
@@ -30,8 +45,13 @@ If you want to learn more about building native executables, please consult http
 curl http://localhost:8080/openapi
 ```
 
+## Swagger UI
+
+http://localhost:8080/swagger-ui
+
 ## Running tests
 
 To run unit tests only `./mvnw test`
 
+Before you run the integration tests, the database should be available. The tests won't create a database.
 To run all tests unit and integration `./mvnw clean verify`
