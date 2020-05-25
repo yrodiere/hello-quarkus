@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
@@ -14,13 +15,16 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Disabled;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -34,10 +38,11 @@ import io.vertx.core.json.JsonObject;
 @Tag("integration")
 @TestInstance(Lifecycle.PER_CLASS)
 public class ProductResourceITest {
+      private static final String API_PRODUCTS = "/api/products";
       @Inject
       DataSource dataSource;
 
-      @AfterAll
+      @BeforeEach
       public void cleanUp() {
             try (Connection conn = this.dataSource.getConnection(); Statement st = conn.createStatement()) {
                   List<String> lines = List.of(
@@ -89,7 +94,7 @@ public class ProductResourceITest {
                         .contentType("application/json")
                         .body(jsonObj.toString())
                         .when()
-                        .post("/api/product")
+                        .post(API_PRODUCTS)
                         .then()
                         .assertThat()
                         .statusCode(400)
@@ -108,7 +113,7 @@ public class ProductResourceITest {
                         .contentType(ContentType.JSON)
                         .body(prod.toString())
                         .when()
-                        .post("/api/product")
+                        .post(API_PRODUCTS)
                         .then()
                         .assertThat()
                         .statusCode(400)
@@ -125,7 +130,7 @@ public class ProductResourceITest {
       public void productCategoryNotAValidValue() {
             JsonObject jsonObj = this.createJsonProduct("SALAD", "lettuce", "lettuce", "2.50", "200", null);
 
-            given().port(8081).contentType("application/json").body(jsonObj.toString()).when().post("/api/product")
+            given().port(8081).contentType("application/json").body(jsonObj.toString()).when().post(API_PRODUCTS)
                         .then()
                         .assertThat().statusCode(400).body(equalTo(
                                     "The value 'SALAD' is not allowed for the type Category. The allowed values are: [VEGETABLES, MEAT, GRAIN, DAIRY]."));
@@ -142,17 +147,28 @@ public class ProductResourceITest {
             assertProductCreatedStatus201(carrot);
             assertProductCreatedStatus201(corn);
 
-            List<Product> products = given().port(8081).contentType(ContentType.JSON).when().get("/api/product").then()
-                        .assertThat().statusCode(200).extract().as(List.class);
+            List<Product> products = given().port(8081).contentType(ContentType.JSON).when().get(API_PRODUCTS).then()
+                        .assertThat().statusCode(200).extract().as(ArrayList.class);
 
             assertEquals(2, products.size());
       }
 
       @Test
-      @Disabled
+      @SuppressWarnings("unchecked")
       public void productUuidCannotBeSubmittedByUser() {
             JsonObject carrot = this.createJsonProduct(Category.VEGETABLES.name(), "Sweet Carrots", "Carrots", "1.50",
                         "400", null);
+            String uuid = "32999e26-049d-4db8-845c-83765c4da0a2";
+            carrot.put("uuid", uuid);
+            assertProductCreatedStatus201(carrot);
+
+            List<Product> all = given().port(8081).contentType(ContentType.JSON).when().get(API_PRODUCTS).then()
+                        .assertThat().statusCode(200).extract().as(ArrayList.class);
+            ObjectMapper mapper = new ObjectMapper();
+            List<Product> products = mapper.convertValue(all, new TypeReference<List<Product>>() {
+            });
+            assertEquals(1, products.size());
+            assertNotEquals(uuid, products.get(0).getUuid());
       }
 
       private JsonObject createJsonProduct(String category, String description, String name, String price,
@@ -173,7 +189,7 @@ public class ProductResourceITest {
                         .contentType(ContentType.JSON)
                         .body(jsonObj.toString())
                         .when()
-                        .post("/api/product")
+                        .post(API_PRODUCTS)
                         .then()
                         .assertThat()
                         .statusCode(201);

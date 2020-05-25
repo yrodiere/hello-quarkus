@@ -89,16 +89,6 @@ public class Product extends PanacheEntityBase {
         // for jpa
     }
 
-    public Product(ProductRequest product) {
-        this.addUUID();
-        this.createdAt = LocalDateTime.now();
-        this.name = product.name;
-        this.description = product.description;
-        this.price = product.price;
-        this.category = product.category;
-        this.stockAmount = product.stockAmount;
-    }
-
     public void addUUID() {
         this.uuid = java.util.UUID.randomUUID().toString();
     }
@@ -135,5 +125,9 @@ public class Product extends PanacheEntityBase {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public String getUuid() {
+        return uuid;
     }
 }

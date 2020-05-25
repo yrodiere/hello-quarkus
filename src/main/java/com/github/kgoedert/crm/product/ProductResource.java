@@ -7,8 +7,10 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -71,4 +73,24 @@ public class ProductResource {
         List<Product> all = productRepository.findAll().list();
         return Response.status(Status.OK).entity(all).build();
     }
+
+    @PUT
+    @Operation(summary = "Modifies a product")
+    @APIResponse(responseCode = "201", description = "Mofication was successful")
+    @APIResponse(responseCode = "500", description = "Server unavailable")
+    @APIResponse(responseCode = "400", description = "Invalid Product")
+    public Response modify(Product product) {
+        return null;
+    }
+
+    @DELETE
+    @Path("/{uuid}")
+    @Operation(summary = "Deletes a product by its uuid")
+    @APIResponse(responseCode = "200", description = "Product exclusion successful")
+    @APIResponse(responseCode = "400", description = "Invalid product uuid")
+    @APIResponse(responseCode = "500", description = "Server unavailable")
+    public Response delete(@PathParam("uuid") String uuid) {
+        return null;
+    }
+
 }
