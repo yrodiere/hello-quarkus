@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
@@ -16,6 +17,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -25,6 +27,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -32,6 +35,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import io.vertx.core.json.JsonObject;
 
 @QuarkusTest
@@ -154,6 +158,15 @@ public class ProductResourceITest {
       }
 
       @Test
+      public void getAllProductsNoneFound() {
+            Response resp = given().port(8081).contentType(ContentType.JSON).when().get(API_PRODUCTS).then()
+                        .assertThat().statusCode(200).extract().response();
+
+            List result = resp.body().as(List.class);
+            assertEquals(0, result.size());
+      }
+
+      @Test
       @SuppressWarnings("unchecked")
       public void productUuidCannotBeSubmittedByUser() {
             JsonObject carrot = this.createJsonProduct(Category.VEGETABLES.name(), "Sweet Carrots", "Carrots", "1.50",
@@ -169,6 +182,71 @@ public class ProductResourceITest {
             });
             assertEquals(1, products.size());
             assertNotEquals(uuid, products.get(0).getUuid());
+      }
+
+      @Test
+      @SuppressWarnings("unchecked")
+      public void getProductByExistingUUIDReturnsProduct() {
+            JsonObject brocoli = this.createJsonProduct(Category.VEGETABLES.name(), "Brocoli", "Brocoli", "1.50",
+                        "50", null);
+
+            LinkedHashMap<String, String> prodCreated = given().port(8081).contentType(ContentType.JSON)
+                        .body(brocoli.toString()).when()
+                        .post(API_PRODUCTS).then()
+                        .assertThat().statusCode(201).extract().as(LinkedHashMap.class);
+            String uuid = prodCreated.get("uuid");
+
+            LinkedHashMap<String, String> prodFetched = given().port(8081).contentType(ContentType.JSON).when()
+                        .get(API_PRODUCTS + "/" + uuid).then().extract().as(LinkedHashMap.class);
+
+            assertEquals(prodCreated.get("uuid"), prodFetched.get("uuid"));
+            assertEquals(prodCreated.get("createdAt"), prodFetched.get("createdAt"));
+      }
+
+      @Test
+      public void getProductByInexistingUUIDReturns404() {
+            String uuid = "32999e26-049d-4db8-845c-83765c4da0a2";
+            given().port(8081).contentType(ContentType.JSON).when()
+                        .get(API_PRODUCTS + "/" + uuid).then().assertThat().statusCode(404);
+      }
+
+      @Test
+      @SuppressWarnings("unchecked")
+      public void getFirstPageOfProductsOrderedByNameAsc() {
+            this.insertMockProducts();
+
+            List<Product> all = given().port(8081).contentType(ContentType.JSON).when()
+                        .get(API_PRODUCTS + "?sort=+name&page=1&pageSize=10").then().assertThat().statusCode(200)
+                        .extract().as(ArrayList.class);
+
+            assertEquals(10, all.size());
+            ObjectMapper mapper = new ObjectMapper();
+
+            List<Product> products = mapper.convertValue(all, new TypeReference<List<Product>>() {
+            });
+            assertEquals("Beef - Ground Medium", products.get(0).getName());
+            assertEquals("Bread Crumbs - Japanese Style", products.get(1).getName());
+            assertEquals("Cheese - Comtomme", products.get(2).getName());
+            assertEquals("Chilli Paste - Sambal Oelek", products.get(3).getName());
+            assertEquals("Chinese Foods - Chicken", products.get(4).getName());
+      }
+
+      @Test
+      @Disabled
+      public void getSecondPageOfProductsDefaultSorting() {
+
+      }
+
+      @Test
+      @Disabled
+      public void getAllProductsByCategory() {
+
+      }
+
+      @Test
+      @Disabled
+      public void getAllProductsOrderByNameAscPriceDesc() {
+
       }
 
       private JsonObject createJsonProduct(String category, String description, String name, String price,
@@ -193,6 +271,23 @@ public class ProductResourceITest {
                         .then()
                         .assertThat()
                         .statusCode(201);
+      }
+
+      private void insertMockProducts() {
+            try {
+                  ClassLoader classLoader = getClass().getClassLoader();
+                  File file = new File(classLoader.getResource("mock_products.csv").getFile());
+                  List<String> lines = Files.readAllLines(Paths.get(file.getAbsolutePath()));
+
+                  lines.forEach(line -> {
+                        String[] product = line.split(",");
+                        JsonObject prod = this.createJsonProduct(product[0], "", product[1], product[2], product[3],
+                                    null);
+                        this.assertProductCreatedStatus201(prod);
+                  });
+            } catch (IOException e) {
+                  fail("Could not load the image for testing");
+            }
       }
 
 }

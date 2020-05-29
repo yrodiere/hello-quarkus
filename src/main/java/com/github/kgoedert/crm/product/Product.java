@@ -130,4 +130,8 @@ public class Product extends PanacheEntityBase {
     public String getUuid() {
         return uuid;
     }
+
+    public Long getId() {
+        return id;
+    }
 }
