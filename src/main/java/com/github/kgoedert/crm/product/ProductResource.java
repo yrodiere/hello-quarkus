@@ -85,19 +85,28 @@ public class ProductResource {
             @Parameter(name = "sort", description = "The name of the attribute you want to sort for, and its direction", required = false, example = "+name,-category") })
     public Response get(@QueryParam("category") String category, @QueryParam("page") int page,
             @QueryParam("pageSize") int pageSize, @QueryParam("sort") String sort) {
-
         List<Product> all = productRepository.findByFilters(category, page, pageSize, sort);
         return Response.status(Status.OK).entity(all).build();
     }
 
     @PUT
+    @Path("/{uuid}")
+    @Transactional
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Modifies a product")
-    @APIResponse(responseCode = "201", description = "Mofication was successful")
+    @APIResponse(responseCode = "200", description = "Update was successful")
     @APIResponse(responseCode = "500", description = "Server unavailable")
     @APIResponse(responseCode = "400", description = "Invalid Product")
-    public Response modify(Product product) {
-        return null;
+    @APIResponse(responseCode = "404", description = "Product not found")
+    public Response update(Product product, @PathParam("uuid") String uuid) {
+        productService.validateProduct(product);
+        Product current = productRepository.findByUUID(uuid);
+        if(current == null){
+            return Response.status(Status.NOT_FOUND).build();
+        }
+        current.update(product);
+        productRepository.persist(current);
+        return Response.status(Status.OK).entity(current).build();
     }
 
     @DELETE

@@ -99,6 +99,15 @@ public class Product extends PanacheEntityBase {
         }
     }
 
+    public void update(Product product) {
+        this.category = product.getCategory();
+        this.description = product.getDescription();
+        this.image = product.getImage();
+        this.name = product.getName();
+        this.price = product.getPrice();
+        this.stockAmount = product.getStockAmount();
+    }
+
     public Category getCategory() {
         return category;
     }
@@ -134,4 +143,5 @@ public class Product extends PanacheEntityBase {
     public Long getId() {
         return id;
     }
+
 }

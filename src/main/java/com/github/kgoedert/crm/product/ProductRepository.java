@@ -1,5 +1,6 @@
 package com.github.kgoedert.crm.product;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,19 +21,26 @@ public class ProductRepository implements PanacheRepository<Product> {
 
     public List<Product> findByFilters(String category, int page, int pageSize, String sort) {
         Sort orderBy = this.parseSorting(sort);
-        Map<String, Object> params = new HashMap<>();
-        params.put("category", category);
-        PanacheQuery<Product> query = find(
-                "select p from Product p where (:category is null or p.category = :category)",
-                orderBy, params);
-        if (page == 0) {
-            page = 1;
+        Category cat = null;
+        try {
+            cat = category == null ? null : Category.valueOf(category);
+            Map<String, Object> params = new HashMap<>();
+            params.put("category", cat);
+            PanacheQuery<Product> query = find(
+                    "select p from Product p where (:category is null or p.category = :category)",
+                    orderBy, params);
+            if (page == 0) {
+                page = 1;
+            }
+
+            if (pageSize == 0) {
+                pageSize = 10;
+            }
+            return query.page(page - 1, pageSize).list();
+        } catch (IllegalArgumentException e) {
+            return new ArrayList<>();
         }
 
-        if (pageSize == 0) {
-            pageSize = 10;
-        }
-        return query.page(page - 1, pageSize).list();
     }
 
     private Sort parseSorting(String sort) {
