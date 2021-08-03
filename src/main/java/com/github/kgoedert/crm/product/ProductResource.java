@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -30,8 +31,6 @@ import io.vertx.core.json.JsonObject;
 public class ProductResource {
     @Inject
     ProductRepository productRepository;
-    @Inject
-    ProductService productService;
 
     @POST
     @Transactional
@@ -40,8 +39,9 @@ public class ProductResource {
     @APIResponse(responseCode = "200", description = "Product registration successful")
     @APIResponse(responseCode = "400", description = "Invalid Product")
     @APIResponse(responseCode = "500", description = "Server unavailable")
-    public Response add(Product product) {
-        productService.validateProduct(product);
+    public Response add(@Valid Product product) {
+        product.addUUID();
+        product.addCreationDate();
         productRepository.persist(product);
         return Response.status(Status.CREATED).entity(product).build();
     }
@@ -86,8 +86,7 @@ public class ProductResource {
     @APIResponse(responseCode = "500", description = "Server unavailable")
     @APIResponse(responseCode = "400", description = "Invalid Product")
     @APIResponse(responseCode = "404", description = "Product not found")
-    public Response update(Product product, @PathParam("uuid") String uuid) {
-        productService.validateProduct(product);
+    public Response update(@Valid Product product, @PathParam("uuid") String uuid) {
         Product current = productRepository.findByUUID(uuid);
         if(current == null){
             return Response.status(Status.NOT_FOUND).build();
