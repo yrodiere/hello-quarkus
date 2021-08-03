@@ -1,11 +1,9 @@
 package com.github.kgoedert.crm.product;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import javax.validation.ConstraintViolationException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -43,19 +41,9 @@ public class ProductResource {
     @APIResponse(responseCode = "400", description = "Invalid Product")
     @APIResponse(responseCode = "500", description = "Server unavailable")
     public Response add(Product product) {
-        try {
-            productService.validateProduct(product);
-            productRepository.persist(product);
-            return Response.status(Status.CREATED).entity(product).build();
-        } catch (ConstraintViolationException e) {
-            List<String> messages = e.getConstraintViolations().stream()
-                    .map(cv -> cv.getMessage())
-                    .collect(Collectors.toList());
-            JsonObject resp = new JsonObject();
-            resp.put("errors", messages);
-
-            return Response.status(Status.BAD_REQUEST).entity(messages).build();
-        }
+        productService.validateProduct(product);
+        productRepository.persist(product);
+        return Response.status(Status.CREATED).entity(product).build();
     }
 
     @GET
