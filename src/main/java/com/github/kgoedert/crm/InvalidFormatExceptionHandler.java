@@ -19,14 +19,22 @@ public class InvalidFormatExceptionHandler implements ExceptionMapper<InvalidFor
         String sentValue = exception.getValue().toString();
         String target = exception.getTargetType().getSimpleName();
 
-        Object[] constants = exception.getTargetType().getEnumConstants();
+        String message;
+        if ( Enum.class.isAssignableFrom( exception.getTargetType() ) ) {
+            Object[] constants = exception.getTargetType().getEnumConstants();
 
-        List<String> values = Arrays.stream(constants)
-                .map(c -> (Enum) c)
-                .map(c -> c.name()).collect(Collectors.toList());
+            List<String> values = Arrays.stream( constants )
+                    .map( c -> (Enum) c )
+                    .map( c -> c.name() ).collect( Collectors.toList() );
 
-        String message = String.format("The value '%s' is not allowed for the type %s. The allowed values are: %s.",
-                sentValue, target, values);
+            message = String.format(
+                    "The value '%s' is not allowed for the type %s. The allowed values are: %s.",
+                    sentValue, target, values
+            );
+        }
+        else {
+            message = exception.getMessage();
+        }
 
         return Response.status(Status.BAD_REQUEST).entity(message).build();
     }
